@@ -10,17 +10,25 @@ if db_url:
     elif db_url.startswith("postgresql://") and not db_url.startswith("postgresql+asyncpg://"):
         db_url = db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
     
-    # 2. Aggressively strip incompatible parameters which crash asyncpg (sslmode, channel_binding)
+    # 2. Aggressively strip incompatible parameters (case-insensitive)
     import re
-    # Remove ?sslmode=... or &sslmode=... and ?channel_binding=... or &channel_binding=...
-    db_url = re.sub(r"(\?|&)(sslmode|channel_binding)=[^&]+", "", db_url)
+    # Remove ?sslmode=... or &sslmode=... etc.
+    db_url = re.sub(r"(\?|&)(sslmode|channel_binding|target_session_attrs)=[^&]*", "", db_url, flags=re.IGNORECASE)
     
-    # 3. Ensure we have at least one query param for SSL if it's a cloud DB
-    # Most cloud DBs require SSL. We'll add ssl=true if not present.
+    # 3. Clean up any double separators like ?? or && or trailing ?
+    db_url = db_url.replace("?&", "?").replace("&&", "&").rstrip("?")
+    
+    # 4. Ensure we have at least one query param for SSL if it's a cloud DB
     if "postgresql+asyncpg" in db_url and "ssl=" not in db_url:
         separator = "&" if "?" in db_url else "?"
         db_url += f"{separator}ssl=true"
-    
+
+# For debugging purposes on Render - will be visible in logs
+if db_url and "asyncpg" in db_url:
+    # Mask password for safety
+    safe_url = re.sub(r"://([^:]+):([^@]+)@", r"://\1:****@", db_url)
+    print(f"DEBUG DB_URL: {safe_url}")
+
 if not db_url:
     db_url = "sqlite+aiosqlite:///./test.db"
 
