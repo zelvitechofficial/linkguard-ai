@@ -70,10 +70,14 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 # --- Middleware ---
 
+# Parse origins from settings
+origins = [o.strip() for o in settings.ALLOWED_ORIGINS.split(",")] if settings.ALLOWED_ORIGINS else ["*"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[o.strip() for o in settings.ALLOWED_ORIGINS.split(",")] if settings.ALLOWED_ORIGINS else ["*"],
-    allow_credentials=True,
+    allow_origins=origins,
+    # Starlette/FastAPI requirement: allow_credentials cannot be True if allow_origins is ["*"]
+    allow_credentials=True if "*" not in origins else False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
