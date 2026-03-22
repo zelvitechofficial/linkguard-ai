@@ -4,25 +4,22 @@ from app.core.config import settings
 # Fix up the database URL for async pg since most providers give a synchronous URL
 db_url = settings.DATABASE_URL
 if db_url:
-    # 1. Standardize prefix
+    # 1. Standardize prefix to postgresql+asyncpg://
     if db_url.startswith("postgres://"):
         db_url = db_url.replace("postgres://", "postgresql+asyncpg://", 1)
     elif db_url.startswith("postgresql://") and not db_url.startswith("postgresql+asyncpg://"):
         db_url = db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
     
-    # 2. asyncpg does not support 'sslmode'. It uses 'ssl'.
-    # Most cloud providers (Neon/Supabase) include ?sslmode=require
-    if "sslmode=" in db_url:
-        import urllib.parse as urlparse
-        url_parts = list(urlparse.urlparse(db_url))
-        query = dict(urlparse.parse_qsl(url_parts[4]))
-        if "sslmode" in query:
-            # Map sslmode=require to ssl=true for asyncpg
-            if query["sslmode"] in ["require", "verify-ca", "verify-full"]:
-                query["ssl"] = "true"
-            del query["sslmode"]
-        url_parts[4] = urlparse.urlencode(query)
-        db_url = urlparse.urlunparse(url_parts)
+    # 2. Aggressively strip sslmode which crashes asyncpg
+    import re
+    # Remove ?sslmode=... or &sslmode=...
+    db_url = re.sub(r"(\?|&)sslmode=[^&]+", "", db_url)
+    
+    # 3. Ensure we have at least one query param for SSL if it's a cloud DB
+    # Most cloud DBs require SSL. We'll add ssl=true if not present.
+    if "postgresql+asyncpg" in db_url and "ssl=" not in db_url:
+        separator = "&" if "?" in db_url else "?"
+        db_url += f"{separator}ssl=true"
     
 if not db_url:
     db_url = "sqlite+aiosqlite:///./test.db"
