@@ -1,10 +1,20 @@
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from app.core.config import settings
 
+# Fix up the database URL for async pg since most providers give a synchronous URL
+db_url = settings.DATABASE_URL
+if db_url and db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql+asyncpg://", 1)
+elif db_url and db_url.startswith("postgresql://"):
+    db_url = db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    
+if not db_url:
+    db_url = "sqlite+aiosqlite:///./test.db"
+
 # Create async engine for PostgreSQL
 # The URL should be in the format: postgresql+asyncpg://user:password@host:port/dbname
 engine = create_async_engine(
-    settings.DATABASE_URL,
+    db_url,
     echo=settings.DEBUG,
     future=True,
     pool_pre_ping=True
