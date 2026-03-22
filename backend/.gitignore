@@ -19,3 +19,7 @@ db_debug_output.txt
 # OS
 .DS_Store
 Thumbs.db
+
+# Data and Models
+dataset/
+ml_models/*.joblib
