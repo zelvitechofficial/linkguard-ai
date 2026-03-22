@@ -33,14 +33,13 @@ if not db_url:
     db_url = "sqlite+aiosqlite:///./test.db"
 
 # Create async engine for PostgreSQL
-# We use connect_args to explicitly set SSL to 'require' which is supported by asyncpg 0.29.0+
-# This bypasses the need for it to be in the URL string itself.
+# We use connect_args to explicitly set SSL to True for cloud DBs
 engine = create_async_engine(
     db_url,
     echo=settings.DEBUG,
     future=True,
     pool_pre_ping=True,
-    connect_args={"ssl": "require"}
+    connect_args={"ssl": True}
 )
 
 # Create session factory

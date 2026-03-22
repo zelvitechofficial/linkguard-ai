@@ -17,7 +17,8 @@ class Settings(BaseSettings):
     DAILY_SCAN_LIMIT: int = 10
     DAILY_CHATBOT_LIMIT: int = 10
     GEMINI_API_KEY: str = ""
-    ALLOWED_ORIGINS: List[str] = ["*"]
+    # Use a string that we split manually to be safe with all environments
+    ALLOWED_ORIGINS: str = "*"
 
 
 settings = Settings()
