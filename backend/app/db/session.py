@@ -10,10 +10,10 @@ if db_url:
     elif db_url.startswith("postgresql://") and not db_url.startswith("postgresql+asyncpg://"):
         db_url = db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
     
-    # 2. Aggressively strip sslmode which crashes asyncpg
+    # 2. Aggressively strip incompatible parameters which crash asyncpg (sslmode, channel_binding)
     import re
-    # Remove ?sslmode=... or &sslmode=...
-    db_url = re.sub(r"(\?|&)sslmode=[^&]+", "", db_url)
+    # Remove ?sslmode=... or &sslmode=... and ?channel_binding=... or &channel_binding=...
+    db_url = re.sub(r"(\?|&)(sslmode|channel_binding)=[^&]+", "", db_url)
     
     # 3. Ensure we have at least one query param for SSL if it's a cloud DB
     # Most cloud DBs require SSL. We'll add ssl=true if not present.
