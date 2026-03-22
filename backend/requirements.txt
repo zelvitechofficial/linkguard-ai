@@ -1,0 +1,12 @@
+fastapi
+uvicorn[standard]
+pydantic-settings
+sqlalchemy
+asyncpg
+python-dotenv
+joblib
+scikit-learn
+httpx
+python-jose[cryptography]
+svix
+google-genai

@@ -1,0 +1,21 @@
+# Python 
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+.env
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Database
+*.sqlite3
+db_debug_output.txt
+
+# OS
+.DS_Store
+Thumbs.db

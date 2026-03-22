@@ -1,0 +1,88 @@
+import random
+import re
+from google import genai
+from typing import List, Optional
+from app.core.config import settings
+from app.core.logger import setup_logger
+
+logger = setup_logger(__name__)
+
+# ── Gemini Configuration ──────────────────────────────────────────────────────
+
+SYSTEM_PROMPT = """
+You are LinkGuard AI, a highly specialized cybersecurity assistant integrated into the LinkGuard URL Threat Detection platform.
+Your expertise is in URL analysis, phishing prevention, and general online safety.
+
+Your mission:
+1. Provide clear, expert educational answers about cyber threats (phishing, malware, etc.).
+2. Explain technical security concepts in accessible, user-friendly language.
+3. If a user asks to scan a specific URL, prioritize reminding them to use the built-in LinkGuard Scanner.
+4. Keep your tone professional, helpful, and safety-first.
+5. ONLY discuss topics related to cybersecurity and online safety. If asked about unrelated topics, politely redirect.
+6. Be concise—aim for 2-4 sentences per response.
+"""
+
+_SECURITY_TIPS = [
+    "Enable Multi-Factor Authentication (MFA) on all your sensitive accounts.",
+    "Always hover over a link to see the actual destination URL before clicking.",
+    "If an email creates a sense of extreme urgency, be twice as cautious—it's a common phishing tactic.",
+    "Check for 'https://' and a padlock icon, but remember that even malicious sites can use SSL nowadays.",
+    "Use a password manager to generate and store unique, complex passwords for every site.",
+    "Be wary of unsolicited messages asking for personal information, even if they appear to come from a known brand.",
+]
+
+# _ERROR_MESSAGE removed in favor of dynamic fallback tips
+
+# ── Service ───────────────────────────────────────────────────────────────────
+
+class ChatbotService:
+    def __init__(self):
+        self.ai_enabled = False
+        if settings.GEMINI_API_KEY:
+            try:
+                self.client = genai.Client(api_key=settings.GEMINI_API_KEY)
+                # Use a stable, high-availability model
+                self.model_name = "gemini-1.5-flash"
+                self.ai_enabled = True
+                logger.info("google-genai SDK initialized for ChatbotService.")
+            except Exception as e:
+                logger.error(f"Failed to initialize google-genai SDK: {e}")
+
+    def get_response(self, query: str) -> str:
+        """Returns an AI-generated answer using Gemini with a graceful safety fallback."""
+        if not self.ai_enabled:
+            return self.get_random_tip()
+
+        try:
+            response = self.client.models.generate_content(
+                model=self.model_name,
+                contents=query,
+                config={'system_instruction': SYSTEM_PROMPT}
+            )
+            return response.text.strip()
+        except Exception as e:
+            logger.error(f"Gemini generation error: {e}")
+            # Fallback to a random security tip instead of showing an error message
+            # This provides a "better solution" by being helpful even when the AI fails
+            return f"LinkGuard AI is currently focusing its security brain on a complex threat, but here's a quick safety tip while I reconnect: {self.get_random_tip()}"
+
+    def get_random_tip(self) -> str:
+        return random.choice(_SECURITY_TIPS)
+
+    def get_all_tips(self, count: Optional[int] = None) -> List[str]:
+        if count:
+            return random.sample(_SECURITY_TIPS, min(count, len(_SECURITY_TIPS)))
+        return _SECURITY_TIPS
+
+    def get_faqs(self) -> List[dict]:
+        """Returns an empty list as FAQs are now handled by AI."""
+        return []
+
+# ── Singleton ─────────────────────────────────────────────────────────────────
+_chatbot_instance: ChatbotService | None = None
+
+def get_chatbot_service() -> ChatbotService:
+    global _chatbot_instance
+    if _chatbot_instance is None:
+        _chatbot_instance = ChatbotService()
+    return _chatbot_instance
