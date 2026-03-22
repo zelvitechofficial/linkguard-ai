@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from app.core.config import settings
+import re
 
 # Fix up the database URL for async pg since most providers give a synchronous URL
 db_url = settings.DATABASE_URL
