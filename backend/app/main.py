@@ -80,6 +80,14 @@ app.add_middleware(
 
 # --- Routes ---
 
+@app.get("/")
+async def root():
+    return {
+        "message": "LinkGuard AI Backend is running",
+        "status": "online",
+        "docs": "/docs"
+    }
+
 app.include_router(health.router,    prefix="/api/v1/healthcheck", tags=["healthcheck"])
 app.include_router(url.router,       prefix="/api/v1/url",         tags=["url"])
 app.include_router(webhooks.router,  prefix="/api/v1/auth/webhook", tags=["webhooks"])
