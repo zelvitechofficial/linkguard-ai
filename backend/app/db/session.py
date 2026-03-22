@@ -35,7 +35,7 @@ if db_url and "asyncpg" in db_url:
 import os
 for env_key in ["sslmode", "PGSSLMODE", "channel_binding", "target_session_attrs"]:
     if env_key in os.environ:
-        logger.info(f"Purging incompatible env var: {env_key}")
+        print(f"Purging incompatible env var: {env_key}")
         os.environ.pop(env_key)
 
 if not db_url:
