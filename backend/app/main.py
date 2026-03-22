@@ -68,27 +68,48 @@ async def global_exception_handler(request: Request, exc: Exception):
         content={"detail": "An unexpected error occurred on the server.", "success": False},
     )
 
-# --- Middleware ---
+# --- Middleware (Dynamic CORS Reflector) ---
+# This ensures credentials work even with multiple/unknown origins (Netlify)
+@app.middleware("http")
+async def dynamic_cors_handler(request: Request, call_next):
+    origin = request.headers.get("origin")
+    
+    # Handle Preflight (OPTIONS)
+    if request.method == "OPTIONS":
+        from fastapi import Response
+        response = Response(status_code=204)
+        if origin:
+            response.headers["Access-Control-Allow-Origin"] = origin
+            response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+            response.headers["Access-Control-Allow-Headers"] = "*"
+            response.headers["Access-Control-Allow-Credentials"] = "true"
+        return response
 
-# Parse origins from settings
-origins = [o.strip() for o in settings.ALLOWED_ORIGINS.split(",")] if settings.ALLOWED_ORIGINS else ["*"]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    # Starlette/FastAPI requirement: allow_credentials cannot be True if allow_origins is ["*"]
-    allow_credentials=True if "*" not in origins else False,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+    # Handle Actual Request
+    response = await call_next(request)
+    if origin:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+        # Ensure error responses also have CORS headers
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "*"
+    return response
 
 # --- Routes ---
 
 @app.get("/")
-async def root():
+async def root(db: AsyncSession = Depends(get_db)):
+    try:
+        from sqlalchemy import text
+        await db.execute(text("SELECT 1"))
+        db_status = "connected"
+    except Exception as e:
+        db_status = f"error: {str(e)}"
+        
     return {
         "message": "LinkGuard AI Backend is running",
         "status": "online",
+        "database": db_status,
         "docs": "/docs"
     }
 
