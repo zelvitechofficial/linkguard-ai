@@ -29,11 +29,20 @@ if db_url and "asyncpg" in db_url:
     safe_url = re.sub(r"://([^:]+):([^@]+)@", r"://\1:****@", db_url)
     print(f"DEBUG DB_URL: {safe_url}")
 
+# CRITICAL: asyncpg is extremely sensitive to 'sslmode' and other standard PG env vars.
+# Some environments (like Render) or SQLAlchemy might try to inject 'sslmode' 
+# from PGSSLMODE or other sources. We must purge these to prevent TypeError.
+import os
+for env_key in ["sslmode", "PGSSLMODE", "channel_binding", "target_session_attrs"]:
+    if env_key in os.environ:
+        logger.info(f"Purging incompatible env var: {env_key}")
+        os.environ.pop(env_key)
+
 if not db_url:
     db_url = "sqlite+aiosqlite:///./test.db"
 
 # Create async engine for PostgreSQL
-# The URL should be in the format: postgresql+asyncpg://user:password@host:port/dbname
+# We use connect_args to explicitly ensure no bad parameters leak through
 engine = create_async_engine(
     db_url,
     echo=settings.DEBUG,
