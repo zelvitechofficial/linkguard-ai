@@ -83,20 +83,36 @@ class URLService:
     def _evaluate_threat(
         self, url: str, predictions: Dict[str, float]
     ) -> Tuple[bool, str, float, Dict[str, float]]:
-        """Blends ML predictions with typosquatting heuristics into a final verdict."""
+        """Blends ML predictions with typosquatting heuristics and whitelisting into a final verdict."""
         parsed = urllib.parse.urlparse(url)
         hostname = (parsed.hostname or "").lower()
-        parts = hostname.split(".")
-        core_domain = parts[-2] if len(parts) >= 2 else (parts[0] if parts else "")
+        
+        # Remove common prefixes like 'www.' for cleaner brand matching
+        clean_hostname = hostname.replace("www.", "")
+        parts = clean_hostname.split(".")
+        
+        # Extract core domain (e.g., 'google' from 'google.com' or 'google.co.uk')
+        if len(parts) >= 2:
+            # Handle cases like .co.uk by taking the second to last part if not a common TLD
+            core_domain = parts[-2]
+        else:
+            core_domain = parts[0] if parts else ""
 
-        # Typosquatting check
+        # 1. Whitelist Check (Exact Brand Match)
+        # If the core domain exactly matches a trusted brand, override ML as SAFE
+        if core_domain in TARGET_BRANDS:
+            # We still keep the ML predictions for data, but force the verdict to safe
+            return False, 'safe', 1.0, predictions
+
+        # 2. Typosquatting check
         for brand in TARGET_BRANDS:
-            if core_domain == brand:
-                continue
-            if 0.80 <= SequenceMatcher(None, brand, core_domain).ratio() < 1.0:
+            # Similarity ratio between 80% and 99% is suspicious
+            ratio = SequenceMatcher(None, brand, core_domain).ratio()
+            if 0.80 <= ratio < 1.0:
                 predictions[f'typosquatting ({brand})'] = 0.95
                 return True, 'malicious', max(max(predictions.values(), default=0.0), 0.95), predictions
 
+        # 3. Standard ML Thresholding
         is_suspicious = any(p > 0.5 for p in predictions.values())
         verdict = 'malicious' if is_suspicious else 'safe'
         confidence = max(predictions.values(), default=0.0)
