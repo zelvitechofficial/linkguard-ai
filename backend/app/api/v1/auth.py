@@ -129,11 +129,12 @@ async def get_current_user(token: HTTPAuthorizationCredentials = Depends(securit
 
 async def fetch_clerk_user_email(sub: str) -> str:
     """Fetch the user's primary email directly from Clerk backend API."""
-    if not settings.CLERK_SECRET_KEY:
+    secret_key = settings.CLERK_SECRET_KEY_ROBUST
+    if not secret_key:
         return None
     try:
         async with httpx.AsyncClient() as client:
-            headers = {"Authorization": f"Bearer {settings.CLERK_SECRET_KEY}"}
+            headers = {"Authorization": f"Bearer {secret_key}"}
             resp = await client.get(f"https://api.clerk.com/v1/users/{sub}", headers=headers)
             if resp.status_code == 200:
                 data = resp.json()

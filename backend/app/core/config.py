@@ -16,9 +16,17 @@ class Settings(BaseSettings):
     ADMIN_EMAIL: str = ""
     DAILY_SCAN_LIMIT: int = 10
     DAILY_CHATBOT_LIMIT: int = 10
-    GEMINI_API_KEY: str = ""
     # Use a string that we split manually to be safe with all environments
     ALLOWED_ORIGINS: str = "*"
+
+    @property
+    def CLERK_SECRET_KEY_ROBUST(self) -> str:
+        """Returns the secret key, falling back to CLERK_API_KEY if it contains the secret value."""
+        if self.CLERK_SECRET_KEY and self.CLERK_SECRET_KEY.startswith("sk_"):
+            return self.CLERK_SECRET_KEY
+        if self.CLERK_API_KEY and self.CLERK_API_KEY.startswith("sk_"):
+            return self.CLERK_API_KEY
+        return self.CLERK_SECRET_KEY or self.CLERK_API_KEY
 
 
 settings = Settings()

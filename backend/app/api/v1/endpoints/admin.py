@@ -31,10 +31,11 @@ async def get_scans(limit: int = 200, db: AsyncSession = Depends(get_db)):
         rows = await repo.get_all_scans(limit=limit)
         
         clerk_emails = {}
-        if settings.CLERK_SECRET_KEY:
+        secret_key = settings.CLERK_SECRET_KEY_ROBUST
+        if secret_key:
             try:
                 headers = {
-                    "Authorization": f"Bearer {settings.CLERK_SECRET_KEY}",
+                    "Authorization": f"Bearer {secret_key}",
                     "Content-Type": "application/json",
                 }
                 async with httpx.AsyncClient() as client:
@@ -119,12 +120,13 @@ async def get_ml_metrics():
 @router.get("/users")
 async def get_users():
     """Fetch user list from Clerk Backend API."""
-    if not settings.CLERK_SECRET_KEY:
+    secret_key = settings.CLERK_SECRET_KEY_ROBUST
+    if not secret_key:
         logger.warning("CLERK_SECRET_KEY missing. Cannot fetch user list.")
         return []
 
     headers = {
-        "Authorization": f"Bearer {settings.CLERK_SECRET_KEY}",
+        "Authorization": f"Bearer {secret_key}",
         "Content-Type": "application/json",
     }
 
