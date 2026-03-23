@@ -30,9 +30,9 @@ export const Header = () => {
 
   const handleAdminClick = () => {
     // Determine the admin URL. 
+    // In production, use the environment variable.
     // In local dev, it's usually the next port (5174).
-    const currentHost = window.location.hostname;
-    const adminUrl = `http://${currentHost}:5174`;
+    const adminUrl = import.meta.env.VITE_ADMIN_URL || `http://${window.location.hostname}:5174`;
     
     // Strictly redirect
     window.location.href = adminUrl;
