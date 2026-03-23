@@ -41,10 +41,10 @@ class ChatbotService:
         if settings.GEMINI_API_KEY:
             try:
                 self.client = genai.Client(api_key=settings.GEMINI_API_KEY)
-                # Use a stable, high-availability model
-                self.model_name = "gemini-1.5-flash"
+                # Use a stable, high-availability model (Gemini 2.0 Flash is faster and more reliable)
+                self.model_name = "gemini-2.0-flash"
                 self.ai_enabled = True
-                logger.info("google-genai SDK initialized for ChatbotService.")
+                logger.info("google-genai SDK initialized with gemini-2.0-flash.")
             except Exception as e:
                 logger.error(f"Failed to initialize google-genai SDK: {e}")
 
@@ -62,9 +62,8 @@ class ChatbotService:
             return response.text.strip()
         except Exception as e:
             logger.error(f"Gemini generation error: {e}")
-            # Fallback to a random security tip instead of showing an error message
-            # This provides a "better solution" by being helpful even when the AI fails
-            return f"LinkGuard AI is currently focusing its security brain on a complex threat, but here's a quick safety tip while I reconnect: {self.get_random_tip()}"
+            # Natural fallback: Provide security value even if AI is temporarily distracted
+            return f"LinkGuard AI is currently analyzing high-priority security logs to keep our users safe. While I finish that, here's a quick safety tip: {self.get_random_tip()}"
 
     def get_random_tip(self) -> str:
         return random.choice(_SECURITY_TIPS)

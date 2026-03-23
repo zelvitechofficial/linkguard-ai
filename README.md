@@ -165,4 +165,27 @@ Access the live application and its components via the following links:
 - **Backend API (Production)**: [https://linkguard-backend-q6cu.onrender.com](https://linkguard-backend-q6cu.onrender.com)
 
 ---
+
+## 🛠️ 8. Troubleshooting & Production Configuration
+
+For the live project demonstration, ensure the following environment variables are correctly configured in your hosting platform (Render/Netlify).
+
+### Required Backend Environment Variables (Render)
+| Variable | Description |
+| :--- | :--- |
+| `DATABASE_URL` | PostgreSQL connection string (asyncpg). |
+| `CLERK_SECRET_KEY` | Required for Admin panel to fetch Registered Users. |
+| `GEMINI_API_KEY` | Required for the AI Cybersecurity Assistant. |
+| `CLERK_API_KEY` | Public key for user resolution. |
+
+### Required Frontend Environment Variables (Netlify)
+| Variable | Description |
+| :--- | :--- |
+| `VITE_API_URL` | Should point to your production Render backend URL. |
+| `VITE_ADMIN_URL` | Should point to your production Admin dashboard URL. |
+
+> [!TIP]
+> **CAPTCHA Issues?** The system now includes an updated Content Security Policy (CSP) to allow Cloudflare Turnstile. If CAPTCHA fails to load, ensure no browser extensions (like aggressive ad-blockers) are interfering.
+
+---
 *Built with ❤️ for a safer internet.*
