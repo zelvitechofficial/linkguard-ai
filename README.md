@@ -155,4 +155,14 @@ This multi-layered approach (ML + Heuristics) drastically reduces false negative
 *Note: Ensure all `.env` files are properly configured with your database URLs, ML metrics paths, and Clerk API keys before launching.*
 
 ---
+
+## 🌐 7. Live Production Links
+
+Access the live application and its components via the following links:
+
+- **Frontend (Main Application)**: [https://linkguardaihome.netlify.app/](https://linkguardaihome.netlify.app/)
+- **Admin Dashboard**: [https://linkguardaiadmin.netlify.app/](https://linkguardaiadmin.netlify.app/)
+- **Backend API (Production)**: [https://linkguard-backend-q6cu.onrender.com](https://linkguard-backend-q6cu.onrender.com)
+
+---
 *Built with ❤️ for a safer internet.*
