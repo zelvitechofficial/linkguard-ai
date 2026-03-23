@@ -33,7 +33,20 @@ _SECURITY_TIPS = [
     "Be wary of unsolicited messages asking for personal information, even if they appear to come from a known brand.",
 ]
 
-# _ERROR_MESSAGE removed in favor of dynamic fallback tips
+_OFFLINE_RESPONSES = {
+    "phishing": "Phishing is a type of social engineering where attackers deceive users into revealing sensitive data. Always check the sender's real address and look for suspicious urgency before clicking.",
+    "scanner": "The LinkGuard Scanner uses advanced Machine Learning to analyze URL patterns, certificate age, and domain heuristics to identify threats in real-time. Just paste a link on the home page to start.",
+    "scan": "The LinkGuard Scanner uses advanced Machine Learning to analyze URL patterns, certificate age, and domain heuristics to identify threats in real-time. Just paste a link on the home page to start.",
+    "password": "A strong password should be at least 12 characters, include symbols, and be unique to every site. Using a reputable password manager is the best way to stay secure.",
+    "mfa": "Multi-Factor Authentication (MFA) adds a critical second layer of defense. Even if an attacker steals your password, they can't access your account without the second token.",
+    "2fa": "Multi-Factor Authentication (MFA) adds a critical second layer of defense. Even if an attacker steals your password, they can't access your account without the second token.",
+    "help": "I am LinkGuard AI, your cybersecurity assistant. You can ask me about phishing, malware, SSL certificates, or how to use our scanner. How can I help you stay safe today?",
+    "hi": "Hello! I am LinkGuard AI. I'm here to help you navigate the digital world safely. Do you have a security concern or would you like to learn about phishing protection?",
+    "hello": "Hello! I am LinkGuard AI. I'm here to help you navigate the digital world safely. Do you have a security concern or would you like to learn about phishing protection?",
+}
+
+# Ordered list of models to try (Stability first)
+_MODEL_PRIORITY = ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-1.5-flash-8b", "gemini-2.0-flash-exp"]
 
 # ── Service ───────────────────────────────────────────────────────────────────
 
@@ -43,29 +56,44 @@ class ChatbotService:
         if settings.GEMINI_API_KEY:
             try:
                 self.client = genai.Client(api_key=settings.GEMINI_API_KEY)
-                # Use a stable, high-availability model (Gemini 2.0 Flash is faster and more reliable)
-                self.model_name = "gemini-2.0-flash"
                 self.ai_enabled = True
-                logger.info("google-genai SDK initialized with gemini-2.0-flash.")
+                logger.info("google-genai SDK initialized.")
             except Exception as e:
                 logger.error(f"Failed to initialize google-genai SDK: {e}")
 
     def get_response(self, query: str) -> str:
-        """Returns an AI-generated answer using Gemini with a graceful safety fallback."""
+        """Returns a robust security response using offline rules or multi-model AI logic."""
+        
+        # 1. Offline Rule Engine (Instant & 100% Reliable)
+        query_lower = query.lower()
+        for keyword, response in _OFFLINE_RESPONSES.items():
+            if keyword in query_lower:
+                logger.info(f"Offline response triggered for keyword: {keyword}")
+                return response
+
         if not self.ai_enabled:
             return self.get_random_tip()
 
-        try:
-            response = self.client.models.generate_content(
-                model=self.model_name,
-                contents=query,
-                config={'system_instruction': SYSTEM_PROMPT}
-            )
-            return response.text.strip()
-        except Exception as e:
-            logger.error(f"Gemini generation error: {e}")
-            # Natural fallback: Provide security value even if AI is temporarily distracted
-            return f"LinkGuard AI is currently analyzing high-priority security logs to keep our users safe. While I finish that, here's a quick safety tip: {self.get_random_tip()}"
+        # 2. Multi-Model AI Logic (Iterative Fallback)
+        last_error = "Unknown error"
+        for model_name in _MODEL_PRIORITY:
+            try:
+                logger.info(f"Attempting generation with model: {model_name}")
+                response = self.client.models.generate_content(
+                    model=model_name,
+                    contents=query,
+                    config={'system_instruction': SYSTEM_PROMPT}
+                )
+                if response and response.text:
+                    return response.text.strip()
+            except Exception as e:
+                last_error = str(e)
+                logger.warning(f"Model {model_name} failed: {e}")
+                continue
+
+        # 3. Final Fallback (Detailed for diagnostics)
+        logger.error(f"All AI models failed. Last error: {last_error}")
+        return f"LinkGuard AI is currently analyzing high-priority security logs to keep our users safe. (Tip: {self.get_random_tip()})"
 
     def get_random_tip(self) -> str:
         return random.choice(_SECURITY_TIPS)
