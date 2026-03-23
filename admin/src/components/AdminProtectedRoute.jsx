@@ -1,13 +1,12 @@
 import { useUser, SignIn } from '@clerk/clerk-react';
 import { useEffect } from 'react';
 import LoadingSpinner from './LoadingSpinner';
-
-const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL;
+import config from '../config';
 
 const UnauthorizedView = ({ email }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
-      window.location.href = "http://localhost:5173";
+      window.location.href = config.homeUrl;
     }, 3000);
     return () => clearTimeout(timer);
   }, []);
@@ -57,7 +56,7 @@ const AdminProtectedRoute = ({ children }) => {
           />
           <div className="mt-8 text-center">
             <a 
-              href="http://localhost:5173" 
+              href={config.homeUrl} 
               className="text-sm text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors"
             >
               &larr; Back to Home
@@ -69,7 +68,7 @@ const AdminProtectedRoute = ({ children }) => {
   }
 
   // 2. If signed in but NOT as the admin: Show error and redirect automatically
-  if (user?.primaryEmailAddress?.emailAddress !== ADMIN_EMAIL) {
+  if (user?.primaryEmailAddress?.emailAddress !== config.adminEmail) {
     return <UnauthorizedView email={user?.primaryEmailAddress?.emailAddress} />;
   }
 

@@ -28,8 +28,35 @@ export const Header = () => {
   const { user, isLoaded } = useUser()
   const { openSignIn } = useClerk()
 
+  const handleAdminClick = (e) => {
+    e.preventDefault();
+    
+    if (!isLoaded) return;
+
+    if (!user) {
+      toast.error("Please sign in to access the admin panel.", {
+        icon: '🔒',
+        style: { borderRadius: '10px', background: '#333', color: '#fff' }
+      });
+      return;
+    }
+
+    const email = user.primaryEmailAddress?.emailAddress;
+    if (email !== config.adminEmail) {
+      toast.error("Access Denied: This account does not have administrative privileges.", {
+        duration: 4000,
+        position: 'top-center',
+        style: { border: '1px solid #ef4444', padding: '16px', color: '#ef4444' }
+      });
+      return;
+    }
+
+    // Authorized - redirect
+    window.location.href = config.adminUrl;
+  };
+
   return (
-    <header className="fixed top-0 left-0 right-0 h-16 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 z-50 px-4 md:px-10 flex items-center justify-between transition-colors duration-300">
+    <header className="fixed top-0 left-0 right-0 h-16 bg-white/80 dark:bg-gray-950/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 z-50 px-4 md:px-10 flex items-center justify-between transition-colors duration-300">
       <div className="flex items-center gap-1.5 sm:gap-2 md:ml-4">
         <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shrink-0">
           <Zap size={18} className="text-white fill-current" />
@@ -38,15 +65,13 @@ export const Header = () => {
       </div>
 
       <div className="flex items-center gap-3 md:mr-4">
-        {/* Admin Link */}
-        <a
-          href={config.adminUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors mr-1"
+        {/* Admin Link (as button for check) */}
+        <button
+          onClick={handleAdminClick}
+          className="text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors mr-1 cursor-pointer"
         >
           Admin
-        </a>
+        </button>
 
         {/* Theme Toggle */}
         <button
