@@ -17,7 +17,7 @@ export const config = {
   ),
   
   // Admin Email
-  adminEmail: import.meta.env.VITE_ADMIN_EMAIL || 'mrjeevajeeva1102@gmail.com',
+  adminEmail: import.meta.env.VITE_ADMIN_EMAIL || 'nithyaganeshm@gmail.com',
 
   // Frontend Home URL
   homeUrl: isProd ? 'https://linkguardaihome.netlify.app/' : `http://${window.location.hostname}:5173`,

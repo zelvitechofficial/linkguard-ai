@@ -40,9 +40,10 @@ const AdminProtectedRoute = ({ children }) => {
   }
 
   // 2. If signed in but NOT as the admin: Show error and redirect automatically
-  if (user?.primaryEmailAddress?.emailAddress !== config.adminEmail) {
-    const email = user?.primaryEmailAddress?.emailAddress;
-    
+  const email = (user?.primaryEmailAddress?.emailAddress || "").toLowerCase();
+  const adminEmail = (config.adminEmail || "").toLowerCase();
+
+  if (email !== adminEmail) {
     // Use toast for a slick demo experience instead of a full error page
     toast.error(`Access Denied: ${email} is not an authorized administrator.`, {
       id: 'admin-denied',

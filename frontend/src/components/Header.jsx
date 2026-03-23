@@ -43,7 +43,9 @@ export const Header = () => {
     }
 
     const email = user.primaryEmailAddress?.emailAddress;
-    if (email !== config.adminEmail) {
+    const adminEmail = (config.adminEmail || "").toLowerCase();
+
+    if (!email || email.toLowerCase() !== adminEmail) {
       toast.error("Access Denied: This account does not have administrative privileges.", {
         duration: 4000,
         position: 'top-center',
