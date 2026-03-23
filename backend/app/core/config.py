@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     ADMIN_EMAIL: str = ""
     DAILY_SCAN_LIMIT: int = 10
     DAILY_CHATBOT_LIMIT: int = 10
+    GEMINI_API_KEY: str = ""
     # Use a string that we split manually to be safe with all environments
     ALLOWED_ORIGINS: str = "*"
 
