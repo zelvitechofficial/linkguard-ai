@@ -7,7 +7,7 @@ from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 
 load_dotenv()
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Depends
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -15,7 +15,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from app.core.config import settings
 from app.core.logger import setup_logger
 from app.api.v1.endpoints import health, url, webhooks, chatbot, admin, usage
-from app.db.session import engine
+from app.db.session import engine, get_db, AsyncSession
 from app.services.ml_service import get_ml_service
 from app.services.chatbot_service import get_chatbot_service
 
