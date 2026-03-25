@@ -14,7 +14,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.core.config import settings
 from app.core.logger import setup_logger
-from app.api.v1.endpoints import health, url, webhooks, chatbot, admin, usage
+from app.api.v1.endpoints import health, url, webhooks, chatbot, admin
 from app.db.session import engine, get_db, AsyncSession
 from app.services.ml_service import get_ml_service
 from app.services.chatbot_service import get_chatbot_service
@@ -68,32 +68,17 @@ async def global_exception_handler(request: Request, exc: Exception):
         content={"detail": "An unexpected error occurred on the server.", "success": False},
     )
 
-# --- Middleware (Dynamic CORS Reflector) ---
-# This ensures credentials work even with multiple/unknown origins (Netlify)
-@app.middleware("http")
-async def dynamic_cors_handler(request: Request, call_next):
-    origin = request.headers.get("origin")
-    
-    # Handle Preflight (OPTIONS)
-    if request.method == "OPTIONS":
-        from fastapi import Response
-        response = Response(status_code=204)
-        if origin:
-            response.headers["Access-Control-Allow-Origin"] = origin
-            response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
-            response.headers["Access-Control-Allow-Headers"] = "*"
-            response.headers["Access-Control-Allow-Credentials"] = "true"
-        return response
+# --- Middleware (CORS) ---
+# Allow specific origins for security. Defaulting to '*' in dev if not set.
+origins = [o.strip() for o in settings.ALLOWED_ORIGINS.split(",") if o.strip()]
 
-    # Handle Actual Request
-    response = await call_next(request)
-    if origin:
-        response.headers["Access-Control-Allow-Origin"] = origin
-        response.headers["Access-Control-Allow-Credentials"] = "true"
-        # Ensure error responses also have CORS headers
-        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
-        response.headers["Access-Control-Allow-Headers"] = "*"
-    return response
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins if origins else ["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # --- Routes ---
 
@@ -118,4 +103,3 @@ app.include_router(url.router,       prefix="/api/v1/url",         tags=["url"])
 app.include_router(webhooks.router,  prefix="/api/v1/auth/webhook", tags=["webhooks"])
 app.include_router(chatbot.router,   prefix="/api/v1/chatbot",     tags=["chatbot"])
 app.include_router(admin.router,     prefix="/api/v1/admin",       tags=["admin"])
-app.include_router(usage.router,     prefix="/api/v1/usage",       tags=["usage"])

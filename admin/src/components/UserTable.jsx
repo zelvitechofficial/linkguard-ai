@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 const PAGE_SIZE = 10;
 
-export default function UserTable({ users = [] }) {
+export default function UserTable({ users = [], loading = false }) {
   const [query, setQuery] = useState('');
   const [page, setPage] = useState(1);
 
@@ -16,7 +16,7 @@ export default function UserTable({ users = [] }) {
   const sliced = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
-    <div className="card overflow-hidden">
+    <div className="card overflow-hidden transition-all duration-500 relative">
       {/* Search bar */}
       <div className="card-header flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">Registered Users</p>
@@ -41,7 +41,9 @@ export default function UserTable({ users = [] }) {
           <tbody className="divide-y divide-gray-50 dark:divide-gray-800/50">
             {sliced.length === 0 ? (
               <tr>
-                <td colSpan={3} className="py-10 text-center text-sm text-gray-400 dark:text-gray-600">No users found</td>
+                <td colSpan={3} className="py-10 text-center text-sm text-gray-400 dark:text-gray-600">
+                  {loading ? 'Updating user data...' : 'No users found'}
+                </td>
               </tr>
             ) : sliced.map((u, i) => (
               <tr key={i} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">

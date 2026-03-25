@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MessageSquare, X, Send, ShieldCheck, Info, HelpCircle } from 'lucide-react';
 import chatbotApi from '../services/chatbot';
-import { useUsage } from '../context/UsageContext';
 
 const ChatAssistant = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -11,8 +10,6 @@ const ChatAssistant = () => {
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef(null);
   
-  const { usage, checkChatLimit, incrementChatUsage, refreshUsage } = useUsage();
-
   // Initialize with welcome message and tip of the day
   useEffect(() => {
     const initChat = async () => {
@@ -55,9 +52,6 @@ const ChatAssistant = () => {
   const handleSend = async (text = query) => {
     if (!text.trim()) return;
     
-    // Check limit before sending
-    if (!checkChatLimit()) return;
-
     const userMsg = {
       id: Date.now(),
       type: 'user',
@@ -78,8 +72,6 @@ const ChatAssistant = () => {
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       setMessages(prev => [...prev, botMsg]);
-      incrementChatUsage();
-      refreshUsage();
     } catch (error) {
       const errorMsg = {
         id: Date.now() + 1,
@@ -193,10 +185,6 @@ const ChatAssistant = () => {
                 <Send className="w-4 h-4" />
               </button>
             </form>
-            <p className="text-[10px] text-center text-slate-400 mt-2 flex items-center justify-center gap-1">
-              <Info className="w-2.5 h-2.5" />
-              Usage: {usage.chatbot.used} / {usage.chatbot.limit} Messages
-            </p>
           </div>
         </div>
       )}

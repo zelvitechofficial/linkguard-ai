@@ -16,18 +16,17 @@ from app.services.ml_service import FEATURE_ORDER
 
 def train():
     print("Loading Kaggle Dataset...")
-    csv_path = os.path.join(os.path.dirname(__file__), 'dataset', 'malicious_phish.csv')
+    csv_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'dataset', 'malicious_phish.csv'))
     df = pd.read_csv(csv_path)
     
     df.columns = df.columns.str.strip()
     if 'type' not in df.columns and len(df.columns) >= 2:
         df.rename(columns={df.columns[1]: 'type', df.columns[0]: 'url'}, inplace=True)
     
-    # Stratified sampling to cut down training time 
-    # (Full 650k dataset feature extraction takes too long for a live hot-reload scenario)
-    sample_size = 50000
+    # Reduced sample size to fit in memory
+    sample_size = 10000
     if len(df) > sample_size:
-        print(f"Sampling {sample_size} records to optimize training time...")
+        print(f"Sampling {sample_size} records to optimize training time and memory...")
         df = df.sample(n=sample_size, random_state=42).reset_index(drop=True)
     
     urls = df['url'].tolist()
@@ -54,11 +53,13 @@ def train():
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     
     print("Training Random Forest...")
-    rf_model = RandomForestClassifier(n_estimators=100, random_state=42, n_jobs=-1)
+    # Reduced estimators and added max_depth to save memory
+    rf_model = RandomForestClassifier(n_estimators=20, max_depth=15, random_state=42, n_jobs=-1)
     rf_model.fit(X_train, y_train)
     
     print("Training Decision Tree...")
-    dt_model = DecisionTreeClassifier(random_state=42)
+    # Added max_depth to prevent uncontrolled growth
+    dt_model = DecisionTreeClassifier(max_depth=15, random_state=42)
     dt_model.fit(X_train, y_train)
     
     print("Evaluating models...")
@@ -92,7 +93,7 @@ def train():
         "feature_importance": feature_importance_dict
     }
     
-    models_dir = os.path.join(os.path.dirname(__file__), 'ml_models')
+    models_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'app', 'ml_models'))
     os.makedirs(models_dir, exist_ok=True)
     
     print("Saving Models to /ml_models...")

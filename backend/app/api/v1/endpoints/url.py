@@ -34,17 +34,6 @@ async def analyze_url(
         raise HTTPException(status_code=400, detail="Invalid URL. Must start with http:// or https://")
 
     try:
-        # Check daily limit
-        repo = URLScanRepository(db)
-        local_user = await UserRepository(db).get_user_by_clerk_id(user.get("sub"))
-        if local_user:
-            count = await repo.get_daily_count(local_user.id)
-            if count >= settings.DAILY_SCAN_LIMIT:
-                raise HTTPException(
-                    status_code=429, 
-                    detail=f"Daily scan limit reached ({settings.DAILY_SCAN_LIMIT}). Please try again tomorrow."
-                )
-
         # Perform synchronous URL analysis and save to DB
         service = URLService(db, ml_service)
         result = await service.analyze_and_save_url(

@@ -17,8 +17,8 @@ export default function Home() {
     setInputValue,
     scanResult,
     isLoading: isScanLoading,
-    error,
-    handleScan
+    handleScan,
+    error
   } = useURLScanner()
 
   return (
@@ -31,12 +31,8 @@ export default function Home() {
           setInputValue={setInputValue} 
           isLoading={isScanLoading} 
           handleScan={handleScan}
+          error={error}
         />
-        {error && (
-          <div className="mb-8 p-4 bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900 rounded-xl text-red-600 dark:text-red-400 text-sm max-w-2xl w-full text-center">
-            {error}
-          </div>
-        )}
         <ScanResult scanResult={scanResult} />
       </main>
       <Footer />

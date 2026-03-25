@@ -1,66 +1,30 @@
 import { useState } from 'react';
-import { Trash2, AlertTriangle } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { Trash2 } from 'lucide-react';
 import { deleteScan } from '../api/adminApi';
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 12;
 
-export default function ScanTable({ scans = [], onRefresh }) {
+export default function ScanTable({ scans = [], onRefresh, loading = false }) {
   const [query, setQuery] = useState('');
   const [page, setPage] = useState(1);
   const [deletingId, setDeletingId] = useState(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
   const handleDelete = (id) => {
-    toast((t) => (
-      <div className="flex flex-col gap-3 min-w-[200px]">
-        <div className="flex items-center gap-2 text-amber-600 dark:text-amber-500 font-semibold">
-          <AlertTriangle size={18} />
-          <span>Confirm Deletion</span>
-        </div>
-        <p className="text-sm text-gray-600 dark:text-gray-300">Are you sure you want to delete this scan record? This action cannot be undone.</p>
-        <div className="flex justify-end gap-2 mt-1">
-          <button
-            onClick={() => toast.dismiss(t.id)}
-            className="px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={() => {
-              toast.dismiss(t.id);
-              performDelete(id);
-            }}
-            className="px-3 py-1.5 text-xs font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg shadow-sm transition"
-          >
-            Delete
-          </button>
-        </div>
-      </div>
-    ), { 
-      duration: 5000, 
-      position: 'top-center',
-      className: 'dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-xl'
-    });
+    if (confirmDeleteId === id) {
+      performDelete(id);
+    } else {
+      setConfirmDeleteId(id);
+      // Auto-reset after 5 seconds
+      setTimeout(() => setConfirmDeleteId(null), 5000);
+    }
   };
 
   const performDelete = async (id) => {
     setDeletingId(id);
+    setConfirmDeleteId(null);
     try {
-      await toast.promise(
-        deleteScan(id),
-        {
-          loading: 'Deleting scan record...',
-          success: 'Scan deleted successfully!',
-          error: 'Could not delete scan. Please try again.',
-        },
-        {
-          style: {
-            borderRadius: '10px',
-            background: '#333',
-            color: '#fff',
-          },
-        }
-      );
+      await deleteScan(id);
       if (onRefresh) onRefresh();
     } catch (err) {
       console.error('Delete error:', err);
@@ -78,7 +42,7 @@ export default function ScanTable({ scans = [], onRefresh }) {
   const sliced = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
-    <div className="card overflow-hidden">
+    <div className="card overflow-hidden transition-all duration-500 relative">
       {/* Search bar */}
       <div className="card-header flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">Recent URL Scans</p>
@@ -103,7 +67,9 @@ export default function ScanTable({ scans = [], onRefresh }) {
           <tbody className="divide-y divide-gray-50 dark:divide-gray-800/50">
             {sliced.length === 0 ? (
               <tr>
-                <td colSpan={6} className="py-10 text-center text-sm text-gray-400 dark:text-gray-600">No records found</td>
+                <td colSpan={6} className="py-10 text-center text-sm text-gray-400 dark:text-gray-600">
+                  {loading ? 'Fetching scan records...' : 'No records found'}
+                </td>
               </tr>
             ) : sliced.map((s, i) => (
               <tr key={s.id || i} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
@@ -117,14 +83,23 @@ export default function ScanTable({ scans = [], onRefresh }) {
                 <td className="px-5 py-3 text-gray-600 dark:text-gray-400">{s.confidence != null ? `${(s.confidence * 100).toFixed(1)}%` : '—'}</td>
                 <td className="px-5 py-3 text-gray-400 dark:text-gray-500 text-xs">{s.scanned_at ? new Date(s.scanned_at).toLocaleString() : '—'}</td>
                 <td className="px-5 py-3">
-                  <button 
-                    onClick={() => handleDelete(s.id)}
-                    disabled={deletingId === s.id}
-                    className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50"
-                    title="Delete Record"
-                  >
-                    <Trash2 size={16} className={deletingId === s.id ? 'animate-pulse' : ''} />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    {confirmDeleteId === s.id && (
+                      <span className="text-[10px] font-bold text-red-500 uppercase animate-pulse">Confirm?</span>
+                    )}
+                    <button 
+                      onClick={() => handleDelete(s.id)}
+                      disabled={deletingId === s.id}
+                      className={`p-1.5 rounded-lg transition-all ${
+                        confirmDeleteId === s.id 
+                          ? 'bg-red-500 text-white shadow-sm ring-4 ring-red-500/20' 
+                          : 'text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20'
+                      }`}
+                      title={confirmDeleteId === s.id ? "Click again to confirm delete" : "Delete Record"}
+                    >
+                      <Trash2 size={16} className={deletingId === s.id ? 'animate-spin' : ''} />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

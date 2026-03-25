@@ -45,8 +45,15 @@ _OFFLINE_RESPONSES = {
     "hello": "Hello! I am LinkGuard AI. I'm here to help you navigate the digital world safely. Do you have a security concern or would you like to learn about phishing protection?",
 }
 
-# Ordered list of models to try (Stability first)
-_MODEL_PRIORITY = ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-1.5-flash-8b", "gemini-2.0-flash-exp"]
+# Updated model priority with fully qualified names as a fallback
+_MODEL_PRIORITY = [
+    "gemini-1.5-flash",
+    "models/gemini-1.5-flash", 
+    "gemini-2.0-flash", 
+    "models/gemini-2.0-flash",
+    "gemini-1.5-flash-8b", 
+    "gemini-2.0-flash-exp"
+]
 
 # ── Service ───────────────────────────────────────────────────────────────────
 

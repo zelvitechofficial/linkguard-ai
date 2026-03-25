@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useAuth, useUser, useClerk } from '@clerk/clerk-react'
 import { scanUrlAPI } from '../services/api'
-import { useUsage } from '../context/UsageContext'
-
+import { toast } from 'react-hot-toast'
 export const useURLScanner = () => {
   const [inputValue, setInputValue] = useState('')
   const [scanResult, setScanResult] = useState(null)
@@ -12,43 +11,42 @@ export const useURLScanner = () => {
   const { getToken } = useAuth()
   const { user } = useUser()
   const clerk = useClerk()
-  const { checkScanLimit, incrementScanUsage, refreshUsage } = useUsage()
 
   const handleScan = useCallback(async (url) => {
     const targetUrl = url || inputValue
     if (!targetUrl) return
 
     if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
-      setError('Invalid URL. Must start with http:// or https://')
+      const msg = 'Protocol required. Please ensure your URL starts with http:// or https://'
+      setError(msg)
+      toast.error(msg)
       return
     }
 
-    if (!checkScanLimit()) return
-
     setIsLoading(true)
-    setError(null)
     setScanResult(null)
+    setError(null)
 
     try {
       if (!user) {
         localStorage.setItem('pendingScanUrl', targetUrl)
         clerk.openSignIn({ afterSignInUrl: window.location.href, afterSignUpUrl: window.location.href })
+        setIsLoading(false)
         return
       }
 
-      // Token is now managed globally by axios instances set in App.jsx
       const data = await scanUrlAPI(targetUrl)
       setScanResult(data)
       setInputValue('')
-      incrementScanUsage()
-      // Refresh to sync authoritative count
-      refreshUsage()
     } catch (err) {
-      setError(err.response?.data?.detail || err.message)
+      console.error('Scan error:', err)
+      const msg = err.response?.data?.detail || err.message || 'Failed to analyze URL'
+      setError(msg)
+      toast.error(msg)
     } finally {
       setIsLoading(false)
     }
-  }, [inputValue, user, clerk, getToken, checkScanLimit, incrementScanUsage])
+  }, [inputValue, user, clerk])
 
   useEffect(() => {
     const savedUrl = localStorage.getItem('pendingScanUrl')
@@ -60,5 +58,5 @@ export const useURLScanner = () => {
     }
   }, [user, handleScan])
 
-  return { inputValue, setInputValue, scanResult, isLoading, error, handleScan }
+  return { inputValue, setInputValue, scanResult, isLoading, handleScan, error }
 }

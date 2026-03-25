@@ -38,9 +38,4 @@ export const scanHistoryAPI = async () => {
   return response.data;
 };
 
-export const fetchUsageAPI = async () => {
-  const response = await api.get('/usage');
-  return response.data;
-};
-
 export default api;

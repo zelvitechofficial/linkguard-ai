@@ -30,42 +30,19 @@ async def get_scans(limit: int = 200, db: AsyncSession = Depends(get_db)):
         repo = URLScanRepository(db)
         rows = await repo.get_all_scans(limit=limit)
         
-        clerk_emails = {}
-        secret_key = settings.CLERK_SECRET_KEY_ROBUST
-        if secret_key:
-            try:
-                headers = {
-                    "Authorization": f"Bearer {secret_key}",
-                    "Content-Type": "application/json",
-                }
-                async with httpx.AsyncClient() as client:
-                    response = await client.get("https://api.clerk.com/v1/users?limit=500", headers=headers)
-                    if response.status_code == 200:
-                        users = response.json()
-                        for u in users:
-                            email = u.get("email_addresses", [{}])[0].get("email_address")
-                            if email:
-                                clerk_emails[u.get("id")] = email
-            except Exception as e:
-                logger.warning(f"Could not fetch Clerk users for scan emails: {e}")
-
         result = []
         for r in rows:
-            real_email = r["user_email"]
-            # Convert r to dict if it's a mapping row to safely use .get
+            # Prefer the joined user_email from the database
             r_dict = dict(r)
-            clerk_id = r_dict.get("clerk_user_id")
-            
-            if clerk_id and clerk_id in clerk_emails:
-                real_email = clerk_emails[clerk_id]
+            email = r_dict.get("user_email") or "Unknown User"
                 
             result.append({
-                "id": str(r["id"]),
-                "email": real_email,
-                "url": r["url"],
-                "verdict": r["verdict"],
-                "confidence": float(r["confidence"]) if r["confidence"] is not None else None,
-                "scanned_at": r["scanned_at"].isoformat() if r["scanned_at"] else None,
+                "id": str(r_dict["id"]),
+                "email": email,
+                "url": r_dict["url"],
+                "verdict": r_dict["verdict"],
+                "confidence": float(r_dict["confidence"]) if r_dict["confidence"] is not None else None,
+                "scanned_at": r_dict["scanned_at"].isoformat() if r_dict["scanned_at"] else None,
             })
             
         return result
@@ -104,14 +81,34 @@ async def get_ml_metrics():
     import pathlib
     import json
     
-    # Robust path construction using pathlib
-    base_dir = pathlib.Path(__file__).resolve().parents[4]
-    metrics_path = base_dir / "ml_models" / "metrics.json"
+    # Get the directory of the current file (app/api/v1/endpoints)
+    current_dir = pathlib.Path(__file__).resolve().parent
+    
+    # Go up to the 'app' directory (3 levels up from endpoints)
+    # endpoints -> v1 -> api -> app
+    app_dir = current_dir.parent.parent.parent
+    
+    # Path to metrics.json: app/ml_models/metrics.json
+    metrics_path = app_dir / "ml_models" / "metrics.json"
+    
+    logger.info(f"Attempting to load ML metrics from: {metrics_path}")
     
     try:
         if metrics_path.exists():
             with open(metrics_path, "r", encoding="utf-8") as f:
-                return json.load(f)
+                data = json.load(f)
+                logger.info("Successfully loaded ML metrics.")
+                return data
+        else:
+            logger.warning(f"ML metrics file NOT found at {metrics_path}")
+            
+            # Fallback for different working directories
+            alternative_path = pathlib.Path("app/ml_models/metrics.json").resolve()
+            if alternative_path.exists():
+                 logger.info(f"Found ML metrics at alternative path: {alternative_path}")
+                 with open(alternative_path, "r", encoding="utf-8") as f:
+                     return json.load(f)
+                     
     except Exception as e:
         logger.error(f"Error reading metrics file {metrics_path}: {e}")
         

@@ -1,14 +1,11 @@
-import { useUsage } from '../context/UsageContext'
-
 export const URLScanner = ({ inputValue, setInputValue, isLoading, handleScan }) => {
-  const { usage } = useUsage()
-
   return (
-    <div className="input-container mb-8 bg-white dark:bg-[#1e293b] border border-gray-200 dark:border-gray-700/50">
+    <div className="w-full max-w-2xl mx-auto relative">
+      <div className="input-container mb-8 bg-white dark:bg-[#1e293b] border border-gray-200 dark:border-gray-700/50 shadow-sm focus-within:shadow-md transition-shadow">
       <input
         type="url"
         className="flex-1 w-full bg-transparent border-none outline-none focus:outline-none focus:border-transparent focus:ring-0 text-lg placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-gray-100 h-12 px-4"
-        placeholder="Enter URL to analyze (e.g. https://example.com)"
+        placeholder="Enter URL to analyze..."
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
         disabled={isLoading}
@@ -28,8 +25,6 @@ export const URLScanner = ({ inputValue, setInputValue, isLoading, handleScan })
           </svg>
         )}
       </button>
-      <div className="absolute -bottom-6 left-4 text-[11px] font-medium text-gray-400 dark:text-gray-500 tracking-wider uppercase">
-        Usage: {usage.scans.used} / {usage.scans.limit} Scans
       </div>
     </div>
   )

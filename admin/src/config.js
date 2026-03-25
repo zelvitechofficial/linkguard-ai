@@ -9,7 +9,7 @@ export const config = {
   apiUrl: import.meta.env.VITE_API_BASE_URL || 'https://linkguard-backend-q6cu.onrender.com',
 
   // Admin Email
-  adminEmail: import.meta.env.VITE_ADMIN_EMAIL || 'nithyaganeshm@gmail.com',
+  adminEmail: import.meta.env.VITE_ADMIN_EMAIL || 'linkguardai@gmail.com',
 
   // Frontend Home URL (for redirects)
   homeUrl: isProd ? 'https://linkguardaihome.netlify.app/' : 'http://localhost:5173',

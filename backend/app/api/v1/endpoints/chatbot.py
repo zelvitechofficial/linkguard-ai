@@ -36,14 +36,6 @@ async def ask_chatbot(
         user.get("email") or "unset@example.com"
     )
     
-    if local_user:
-        count = await repo.get_daily_count(local_user.id)
-        if count >= settings.DAILY_CHATBOT_LIMIT:
-            raise HTTPException(
-                status_code=429,
-                detail=f"Daily chatbot limit reached ({settings.DAILY_CHATBOT_LIMIT}). Please try again tomorrow."
-            )
-
     answer = chatbot.get_response(request.query)
     
     if local_user:

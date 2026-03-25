@@ -1,15 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
 import { useAuth } from '@clerk/clerk-react';
 import { setupInterceptors } from './api/adminApi';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
-import OverviewPage from './pages/OverviewPage';
-import MLMonitoringPage from './pages/MLMonitoringPage';
-import ScanDatabasePage from './pages/ScanDatabasePage';
-import UsersPage from './pages/UsersPage';
 import AdminProtectedRoute from './components/AdminProtectedRoute';
+import { AdminProvider } from './context/AdminContext';
+import LoadingSpinner from './components/LoadingSpinner';
+
+const OverviewPage = lazy(() => import('./pages/OverviewPage'));
+const MLMonitoringPage = lazy(() => import('./pages/MLMonitoringPage'));
+const ScanDatabasePage = lazy(() => import('./pages/ScanDatabasePage'));
+const UsersPage = lazy(() => import('./pages/UsersPage'));
 
 function Layout() {
   const { getToken, isLoaded } = useAuth();
@@ -54,12 +56,14 @@ function Layout() {
             toggleTheme={toggleTheme}
           />
           <main className="p-4 lg:p-6 lg:pt-2">
-            <Routes>
-              <Route path="/" element={<OverviewPage />} />
-              <Route path="/ml" element={<MLMonitoringPage />} />
-              <Route path="/users" element={<UsersPage />} />
-              <Route path="/scans" element={<ScanDatabasePage />} />
-            </Routes>
+            <Suspense fallback={<LoadingSpinner message="Switching module..." />}>
+              <Routes>
+                <Route path="/" element={<OverviewPage />} />
+                <Route path="/ml" element={<MLMonitoringPage />} />
+                <Route path="/users" element={<UsersPage />} />
+                <Route path="/scans" element={<ScanDatabasePage />} />
+              </Routes>
+            </Suspense>
           </main>
         </div>
       </div>
@@ -70,8 +74,9 @@ function Layout() {
 export default function App() {
   return (
     <BrowserRouter>
-      <Layout />
-      <Toaster position="top-right" reverseOrder={false} />
+      <AdminProvider>
+        <Layout />
+      </AdminProvider>
     </BrowserRouter>
   );
 }

@@ -3,7 +3,7 @@ import {
   ResponsiveContainer, Cell,
 } from 'recharts';
 
-export default function MLMetricsCard({ metrics = {} }) {
+export default function MLMetricsCard({ metrics = {}, loading = false }) {
   const rf = metrics.random_forest || {};
   const dt = metrics.decision_tree || {};
 
@@ -22,7 +22,8 @@ export default function MLMetricsCard({ metrics = {} }) {
   const pct = v => v != null ? `${(v * 100).toFixed(1)}%` : '—';
 
   return (
-    <div className="space-y-5 transition-colors">
+    <div className="relative space-y-5">
+      <div className="space-y-5">
       {/* Feature Importance */}
       <div className="card p-5">
         <p className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-4">Feature Importance</p>
@@ -78,6 +79,7 @@ export default function MLMetricsCard({ metrics = {} }) {
           </table>
         </div>
       </div>
+    </div>
     </div>
   );
 }

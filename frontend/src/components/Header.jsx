@@ -2,7 +2,6 @@ import { SignedIn, SignedOut, SignInButton, UserButton, useUser, useClerk } from
 import { Zap } from 'lucide-react'
 import { useTheme } from '../context/ThemeContext'
 import config from '../config'
-import { toast } from 'react-hot-toast'
 
 const SunIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -35,10 +34,6 @@ export const Header = () => {
     if (!isLoaded) return;
 
     if (!user) {
-      toast.error("Please sign in to access the admin panel.", {
-        icon: '🔒',
-        style: { borderRadius: '10px', background: '#333', color: '#fff' }
-      });
       return;
     }
 
@@ -46,11 +41,6 @@ export const Header = () => {
     const adminEmail = (config.adminEmail || "").toLowerCase();
 
     if (!email || email.toLowerCase() !== adminEmail) {
-      toast.error("Access Denied: This account does not have administrative privileges.", {
-        duration: 4000,
-        position: 'top-center',
-        style: { border: '1px solid #ef4444', padding: '16px', color: '#ef4444' }
-      });
       return;
     }
 
