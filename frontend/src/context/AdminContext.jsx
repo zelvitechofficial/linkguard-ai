@@ -29,8 +29,20 @@ export const AdminProvider = ({ children }) => {
   }, [visitedPages]);
 
   const updatePageData = useCallback((page, pageData) => {
-    setData(prev => ({ ...prev, [page]: pageData }));
+    setData(prev => {
+      const existing = prev[page];
+      // Merge if both are objects and not arrays
+      const shouldMerge = existing && 
+                          typeof existing === 'object' && !Array.isArray(existing) &&
+                          typeof pageData === 'object' && !Array.isArray(pageData);
+      
+      return {
+        ...prev,
+        [page]: shouldMerge ? { ...existing, ...pageData } : pageData
+      };
+    });
     setVisitedPages(prev => {
+      if (prev.has(page)) return prev;
       const next = new Set(prev);
       next.add(page);
       return next;

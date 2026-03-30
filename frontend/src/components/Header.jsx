@@ -1,7 +1,9 @@
 import { SignedIn, SignedOut, SignInButton, UserButton, useUser, useClerk } from '@clerk/clerk-react'
+import { Link } from 'react-router-dom'
 import { Zap } from 'lucide-react'
 import { useTheme } from '../context/ThemeContext'
 import config from '../config'
+import { toast } from 'react-hot-toast'
 
 const SunIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -28,43 +30,23 @@ export const Header = () => {
   const { user, isLoaded } = useUser()
   const { openSignIn } = useClerk()
 
-  const handleAdminClick = (e) => {
-    e.preventDefault();
-    
-    if (!isLoaded) return;
-
-    if (!user) {
-      return;
-    }
-
-    const email = user.primaryEmailAddress?.emailAddress;
-    const adminEmail = (config.adminEmail || "").toLowerCase();
-
-    if (!email || email.toLowerCase() !== adminEmail) {
-      return;
-    }
-
-    // Authorized - redirect
-    window.location.href = config.adminUrl;
-  };
-
   return (
     <header className="fixed top-0 left-0 right-0 h-16 bg-white/80 dark:bg-gray-950/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 z-50 px-4 md:px-10 flex items-center justify-between transition-colors duration-300">
       <div className="flex items-center gap-1.5 sm:gap-2 md:ml-4">
-        <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shrink-0">
+        <Link to="/" className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shrink-0">
           <Zap size={18} className="text-white fill-current" />
-        </div>
-        <span className="font-bold text-lg md:text-xl xl:text-2xl tracking-tighter md:tracking-tight text-[#1a1a1a] dark:text-white whitespace-nowrap">LinkGuard AI</span>
+        </Link>
+        <Link to="/" className="font-bold text-lg md:text-xl xl:text-2xl tracking-tighter md:tracking-tight text-[#1a1a1a] dark:text-white whitespace-nowrap">LinkGuard AI</Link>
       </div>
 
       <div className="flex items-center gap-3 md:mr-4">
-        {/* Admin Link (as button for check) */}
-        <button
-          onClick={handleAdminClick}
-          className="text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors mr-1 cursor-pointer"
+        {/* Admin Link */}
+        <Link
+          to="/admin"
+          className="text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors mr-1"
         >
           Admin
-        </button>
+        </Link>
 
         {/* Theme Toggle */}
         <button

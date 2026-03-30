@@ -3,6 +3,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import jwt, JWTError
 from app.core.config import settings
 from app.core.logger import setup_logger
+from app.services.clerk_service import ClerkService
 
 logger = setup_logger(__name__)
 security = HTTPBearer()
@@ -127,27 +128,23 @@ async def get_current_user(token: HTTPAuthorizationCredentials = Depends(securit
         headers={"WWW-Authenticate": "Bearer"},
     )
 
-async def fetch_clerk_user_email(sub: str) -> str:
-    """Fetch the user's primary email directly from Clerk backend API."""
-    secret_key = settings.CLERK_SECRET_KEY_ROBUST
-    if not secret_key:
-        return None
-    try:
-        async with httpx.AsyncClient() as client:
-            headers = {"Authorization": f"Bearer {secret_key}"}
-            resp = await client.get(f"https://api.clerk.com/v1/users/{sub}", headers=headers)
-            if resp.status_code == 200:
-                data = resp.json()
-                primary_id = data.get("primary_email_address_id")
-                emails = data.get("email_addresses", [])
-                for em in emails:
-                    if em.get("id") == primary_id:
-                        return em.get("email_address")
-                if emails:
-                    return emails[0].get("email_address")
-    except Exception as e:
-        logger.error(f"Failed to fetch user email from Clerk API: {e}")
-    return None
+
+async def get_user_with_email(current_user: dict = Depends(get_current_user)) -> dict:
+    """
+    Ensures that the user object has an 'email' field.
+    Fetches it from Clerk API if it's missing from the JWT.
+    """
+    if not current_user.get("email"):
+        sub = current_user.get("sub")
+        if sub:
+            email = await ClerkService.fetch_user_email(sub)
+            if email:
+                current_user["email"] = email
+            else:
+                current_user["email"] = "unset@example.com"
+        else:
+            current_user["email"] = "unset@example.com"
+    return current_user
 
 async def get_admin_user(current_user: dict = Depends(get_current_user)) -> dict:
     """
@@ -159,7 +156,7 @@ async def get_admin_user(current_user: dict = Depends(get_current_user)) -> dict
     
     # Clerk session tokens often lack the 'email' claim by default.
     if not user_email and sub:
-        user_email = await fetch_clerk_user_email(sub)
+        user_email = await ClerkService.fetch_user_email(sub)
         if user_email:
             current_user["email"] = user_email  # Cache it for the rest of the request
     

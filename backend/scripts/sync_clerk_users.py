@@ -11,12 +11,13 @@ from app.core.config import settings
 from app.models.user import User
 
 async def sync_users():
-    if not settings.CLERK_API_KEY:
-        print("Error: CLERK_API_KEY not configured.")
+    secret_key = settings.CLERK_SECRET_KEY_ROBUST
+    if not secret_key:
+        print("Error: Clerk Secret Key not configured.")
         return
 
     headers = {
-        "Authorization": f"Bearer {settings.CLERK_API_KEY}",
+        "Authorization": f"Bearer {secret_key}",
         "Content-Type": "application/json",
     }
 

@@ -27,8 +27,29 @@
     @apply bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border border-white/20 dark:border-gray-700/50;
   }
 
+  .glass-card {
+    @apply bg-white/40 dark:bg-gray-900/40 backdrop-blur-xl border border-white/40 dark:border-gray-800/40 shadow-sm transition-all duration-300;
+  }
+
+  .card {
+     @apply bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300;
+  }
+
   .glow-indigo {
     background: radial-gradient(circle at top left, rgba(79, 70, 229, 0.05) 0%, transparent 50%);
+  }
+
+  .sidebar-link {
+    @apply flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200;
+    @apply text-gray-500 hover:text-indigo-600 hover:bg-indigo-50/50 dark:text-gray-400 dark:hover:text-indigo-400 dark:hover:bg-indigo-500/10;
+  }
+
+  .sidebar-link.active {
+    @apply text-indigo-600 bg-indigo-50/80 dark:text-indigo-400 dark:bg-indigo-500/10 font-semibold shadow-sm;
+  }
+
+  .btn-outline {
+    @apply px-4 py-2 text-sm font-medium border border-gray-200 dark:border-gray-800 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all;
   }
 }
 

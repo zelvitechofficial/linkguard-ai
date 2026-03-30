@@ -12,3 +12,7 @@ svix>=1.21.0
 google-genai>=1.0.0
 aiosqlite>=0.20.0
 gunicorn>=21.2.0
+pandas>=2.2.0
+numpy>=1.26.0
+tldextract>=5.1.2
+

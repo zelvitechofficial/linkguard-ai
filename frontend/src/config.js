@@ -9,18 +9,14 @@ export const config = {
   // Backend API URL
   apiUrl: import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1',
 
-  // Admin Panel URL
-  adminUrl: import.meta.env.VITE_ADMIN_URL || (
-    isProd 
-      ? 'https://linkguardaiadmin.netlify.app/' 
-      : `http://${window.location.hostname}:5174`
-  ),
+  // Admin Panel URL (Internal Route)
+  adminUrl: '/admin',
   
-  // Admin Email
-  adminEmail: import.meta.env.VITE_ADMIN_EMAIL || 'linkguardai@gmail.com',
-
   // Frontend Home URL
-  homeUrl: isProd ? 'https://linkguardaihome.netlify.app/' : `http://${window.location.hostname}:5173`,
+  homeUrl: '/',
+
+  // Admin Email for Authorization
+  adminEmail: import.meta.env.VITE_ADMIN_EMAIL || 'linkguardai@gmail.com',
 };
 
 export default config;

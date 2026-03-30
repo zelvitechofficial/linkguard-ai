@@ -1,9 +1,9 @@
 import axios from 'axios';
 
-const BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+import config from '../config';
 
 const api = axios.create({
-  baseURL: BASE,
+  baseURL: config.apiUrl,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -29,11 +29,11 @@ export const setupInterceptors = (getToken) => {
   });
 };
 
-export const getStats = () => api.get('/api/v1/admin/stats').then(r => r.data);
-export const getScans = (limit = 200) => api.get(`/api/v1/admin/scans?limit=${limit}`).then(r => r.data);
-export const getMlMetrics = () => api.get('/api/v1/admin/ml-metrics').then(r => r.data);
-export const getScanVolume = () => api.get('/api/v1/admin/scan-volume').then(r => r.data);
-export const getUsers = () => api.get('/api/v1/admin/users').then(r => r.data);
-export const deleteScan = (id) => api.delete(`/api/v1/admin/scans/${id}`).then(r => r.data);
+export const fetchStats = () => api.get('/admin/stats').then(r => r.data);
+export const fetchScans = (limit = 200) => api.get(`/admin/scans?limit=${limit}`).then(r => r.data);
+export const fetchMlMetrics = () => api.get('/admin/ml-metrics').then(r => r.data);
+export const fetchScanVolume = () => api.get('/admin/scan-volume').then(r => r.data);
+export const fetchUsers = () => api.get('/admin/users').then(r => r.data);
+export const executeDeleteScan = (id) => api.delete(`/admin/scans/${id}`).then(r => r.data);
 
 export default api;

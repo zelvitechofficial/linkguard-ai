@@ -18,6 +18,15 @@ class Settings(BaseSettings):
     # Use a string that we split manually to be safe with all environments
     ALLOWED_ORIGINS: str = "*"
 
+    def validate_setup(self):
+        """Perform basic validation of the environment setup."""
+        if not self.DATABASE_URL:
+            logger.error("DATABASE_URL is not set!")
+        if not self.CLERK_JWKS_URL:
+            logger.error("CLERK_JWKS_URL is not set!")
+        if not self.GEMINI_API_KEY:
+            logger.warning("GEMINI_API_KEY is not set. Chatbot will not function.")
+
     @property
     def CLERK_SECRET_KEY_ROBUST(self) -> str:
         """Returns the secret key, falling back to CLERK_API_KEY if it contains the secret value."""

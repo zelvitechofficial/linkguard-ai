@@ -7,11 +7,17 @@ from app.core.logger import setup_logger
 logger = setup_logger(__name__)
 
 # Single source of truth for feature ordering — shared with train_models.py
+# NOTE: 'use_https' was REMOVED because the training dataset stores benign URLs
+# without protocol prefixes, causing the model to learn https=malicious (wrong).
 FEATURE_ORDER = [
     'url_length', 'host_length', 'path_length', 'count_dot', 'count_hyphen',
     'count_at', 'count_question', 'count_equal', 'count_and', 'count_slash',
-    'count_percent', 'count_digits', 'count_letters', 'is_ip', 'use_https',
-    'subdomain_depth', 'abnormal_url', 'count_suspicious_words'
+    'count_percent', 'count_digits', 'count_letters', 'is_ip',
+    'subdomain_depth', 'abnormal_url', 'count_suspicious_words',
+    'brand_in_subdomain', 'entropy', 'punycode', 'count_non_ascii',
+    'is_root_domain', 'is_common_tld', 'is_high_risk_tld',
+    'domain_length', 'path_depth', 'has_login_path',
+    'has_double_slash_redirect', 'digit_ratio', 'has_port', 'has_at_sign'
 ]
 
 

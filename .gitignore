@@ -1,0 +1,10 @@
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Old admin app (merged into frontend)
+admin/

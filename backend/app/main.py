@@ -37,6 +37,10 @@ async def lifespan(app: FastAPI):
     get_ml_service()
     logger.info("Initialising chatbot service...")
     get_chatbot_service()
+    
+    # Validate environment setup
+    settings.validate_setup()
+    
     logger.info("Startup complete.")
 
     yield

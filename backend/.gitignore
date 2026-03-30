@@ -14,7 +14,6 @@ build/
 
 # Database
 *.sqlite3
-db_debug_output.txt
 
 # OS
 .DS_Store
@@ -23,3 +22,14 @@ Thumbs.db
 # Data and Models
 dataset/
 ml_models/*.joblib
+
+# Debug/temp output
+*.txt
+!requirements.txt
+
+# One-off scripts (keep train_models.py and sync_clerk_users.py)
+scripts/diagnose_dataset.py
+scripts/patch_metrics.py
+scripts/verify_fix.py
+scripts/check_models.py
+scripts/verify_chatbot_detailed.py

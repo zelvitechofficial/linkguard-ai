@@ -1,9 +1,8 @@
 import axios from 'axios';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+import config from '../config';
 
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: config.apiUrl,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -11,6 +10,7 @@ const api = axios.create({
 
 /**
  * Setup an axios request interceptor to dynamically inject the Clerk token.
+ * This ensures every request has a fresh, valid token, avoiding race conditions.
  */
 export const setupInterceptors = (getToken) => {
   api.interceptors.request.use(async (config) => {

@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.v1.auth import get_current_user
+from app.api.v1.auth import get_current_user, get_user_with_email
 from app.db.session import get_db
 from app.core.config import settings
 from app.services.url_service import URLService
@@ -21,7 +21,7 @@ class URLRequest(BaseModel):
 @router.post("/analyze")
 async def analyze_url(
     request: URLRequest,
-    user: dict = Depends(get_current_user),
+    user: dict = Depends(get_user_with_email),
     db: AsyncSession = Depends(get_db),
     ml_service: MLService = Depends(get_ml_service),
 ):
