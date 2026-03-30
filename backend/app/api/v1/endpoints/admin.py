@@ -93,7 +93,7 @@ async def get_ml_metrics():
     
     # Try multiple paths for metrics.json
     paths = [
-        pathlib.Path(__file__).resolve().parent.parent.parent.parent / "app" / "ml_models" / "metrics.json",
+        pathlib.Path(__file__).resolve().parent.parent.parent.parent / "ml_models" / "metrics.json",
         pathlib.Path(__file__).resolve().parent.parent.parent / "ml_models" / "metrics.json",
         pathlib.Path("app/ml_models/metrics.json").resolve(),
         pathlib.Path("ml_models/metrics.json").resolve(),
